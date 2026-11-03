@@ -1169,16 +1169,11 @@ async function jumpToPlanet(targetPlanet) {
   }
   closeModal();
 
-  if ((current === 'mars' && targetPlanet === 'earth') || (current === 'earth' && targetPlanet === 'venus')) {
-    travel();
-    return;
-  }
-
   busy = true;
   targetX = 0;
   targetY = 0;
   experienceEl.classList.add('is-transitioning');
-  await new Promise(r => setTimeout(r, 400));
+  await new Promise(r => setTimeout(r, 350));
 
   current = targetPlanet;
   render();

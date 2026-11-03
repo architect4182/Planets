@@ -712,16 +712,11 @@ export default function PlanetJumpingPage() {
       }
       closeModal();
 
-      if ((s.current === 'mars' && targetPlanet === 'earth') || (s.current === 'earth' && targetPlanet === 'venus')) {
-        travel();
-        return;
-      }
-
       s.busy = true;
       s.targetX = 0;
       s.targetY = 0;
       if (expEl) expEl.classList.add('is-transitioning');
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 350));
 
       applyRender(targetPlanet);
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
