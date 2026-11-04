@@ -1,13 +1,30 @@
 /* ====================================================================
-   1. REMOTE ASSETS CONSTANTS
+   1. REMOTE ASSETS CONSTANTS & UNIVERSAL CODEC RESOLUTION
    ==================================================================== */
 const BASE = 'https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P';
-const MARS_BG  = `${BASE}/3c83091e-4046-4fd6-adbb-2edb728be79a.mp4`;
-const TO_EARTH = `${BASE}/fc3ded42-e845-41f3-a830-5cab512d79cd.mp4`;
-const TO_VENUS = `${BASE}/b30f64d9-1637-477a-83df-d0fc6461a422.mp4`;
-const TO_MARS  = `${BASE}/5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4`;
-const MERCURY  = `${BASE}/d6fb8b6b-c15e-4aaa-9cf7-45bbb5e33372.jpg`;
-const LOGO     = `${BASE}/eb7e0f53-50cd-4af5-abc4-8b9a52cdc01b.svg`;
+
+// Detect whether the current browser / device can actually decode HEVC (H.265)
+const canPlayHEVC = (function () {
+  try {
+    const v = document.createElement('video');
+    return !!(v.canPlayType('video/mp4; codecs="hvc1.1.6.L93.B0"') || v.canPlayType('video/mp4; codecs="hev1.1.6.L93.B0"'));
+  } catch (e) {
+    return false;
+  }
+})();
+
+function resolveVideo(remoteUrl, localName) {
+  if (canPlayHEVC) return remoteUrl;
+  const isNext = typeof window !== 'undefined' && (!!window.__NEXT_DATA__ || !!document.querySelector('#__next') || !!document.querySelector('meta[name="next-head-count"]'));
+  return isNext ? `/videos/${localName}` : `public/videos/${localName}`;
+}
+
+const MARS_BG = resolveVideo(`${BASE}/3c83091e-4046-4fd6-adbb-2edb728be79a.mp4`, 'mars_bg.mp4');
+const TO_EARTH = resolveVideo(`${BASE}/fc3ded42-e845-41f3-a830-5cab512d79cd.mp4`, 'to_earth.mp4');
+const TO_VENUS = resolveVideo(`${BASE}/b30f64d9-1637-477a-83df-d0fc6461a422.mp4`, 'to_venus.mp4');
+const TO_MARS = resolveVideo(`${BASE}/5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4`, 'to_mars.mp4');
+const MERCURY = `${BASE}/d6fb8b6b-c15e-4aaa-9cf7-45bbb5e33372.jpg`;
+const LOGO = `${BASE}/eb7e0f53-50cd-4af5-abc4-8b9a52cdc01b.svg`;
 
 /* ====================================================================
    4. DATA MODEL & COMPREHENSIVE ASTRONOMICAL TELEMETRY
@@ -278,38 +295,38 @@ const solarSystemCatalog = [
 ];
 
 /* DOM Elements */
-const experienceEl    = document.querySelector('.experience');
-const preloader       = document.getElementById('preloader');
-const preloaderVid    = document.getElementById('preloader-video');
-const preloaderCount  = document.getElementById('preloader-count');
-const preloaderVal    = document.getElementById('preloader-value');
-const floatingLogo    = document.getElementById('floating-logo');
-const portalCanvas    = document.getElementById('portal-canvas');
-const portalCtx       = portalCanvas.getContext('2d');
-const sceneCanvas     = document.getElementById('scene-canvas');
-const sceneCtx        = sceneCanvas.getContext('2d');
-const portalBtn       = document.getElementById('portal');
-const portalVideo     = document.getElementById('portal-video');
-const portalImage     = document.getElementById('portal-image');
-const nextName        = document.getElementById('next-name');
-const nextNumber      = document.getElementById('next-number');
-const planetTitle     = document.getElementById('planet-title');
-const factsList       = document.getElementById('facts');
-const planetList      = document.querySelector('.planet-list');
+const experienceEl = document.querySelector('.experience');
+const preloader = document.getElementById('preloader');
+const preloaderVid = document.getElementById('preloader-video');
+const preloaderCount = document.getElementById('preloader-count');
+const preloaderVal = document.getElementById('preloader-value');
+const floatingLogo = document.getElementById('floating-logo');
+const portalCanvas = document.getElementById('portal-canvas');
+const portalCtx = portalCanvas.getContext('2d');
+const sceneCanvas = document.getElementById('scene-canvas');
+const sceneCtx = sceneCanvas.getContext('2d');
+const portalBtn = document.getElementById('portal');
+const portalVideo = document.getElementById('portal-video');
+const portalImage = document.getElementById('portal-image');
+const nextName = document.getElementById('next-name');
+const nextNumber = document.getElementById('next-number');
+const planetTitle = document.getElementById('planet-title');
+const factsList = document.getElementById('facts');
+const planetList = document.querySelector('.planet-list');
 const transitionVideo = document.getElementById('transition-video');
-const customCursor    = document.querySelector('.custom-cursor');
+const customCursor = document.querySelector('.custom-cursor');
 
 /* Modal DOM Elements */
-const modalOverlay    = document.getElementById('modal-overlay');
-const modalContainer  = document.getElementById('modal-container');
-const modalTitle      = document.getElementById('modal-title');
-const modalBadge      = document.getElementById('modal-badge');
-const modalTabs       = document.getElementById('modal-tabs');
-const modalBody       = document.getElementById('modal-body');
-const modalCloseBtn   = document.getElementById('modal-close-btn');
-const telemetryBtn    = document.getElementById('telemetry-btn');
-const navLinks        = document.querySelectorAll('.nav a');
-const menuBtn         = document.querySelector('.menu');
+const modalOverlay = document.getElementById('modal-overlay');
+const modalContainer = document.getElementById('modal-container');
+const modalTitle = document.getElementById('modal-title');
+const modalBadge = document.getElementById('modal-badge');
+const modalTabs = document.getElementById('modal-tabs');
+const modalBody = document.getElementById('modal-body');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const telemetryBtn = document.getElementById('telemetry-btn');
+const navLinks = document.querySelectorAll('.nav a');
+const menuBtn = document.querySelector('.menu');
 
 /* State Variables */
 let current = 'mars';
@@ -424,7 +441,7 @@ function render() {
     if (bg.id === state.background) {
       bg.classList.add('is-visible');
       bg.loop = true;
-      bg.play().catch(() => {});
+      bg.play().catch(() => { });
     } else {
       bg.classList.remove('is-visible');
     }
@@ -442,7 +459,7 @@ function render() {
       portalVideo.load();
     }
     portalVideo.loop = true;
-    portalVideo.play().catch(() => {});
+    portalVideo.play().catch(() => { });
   }
 
   if (activeModal === 'explore') {
@@ -500,10 +517,10 @@ function drawShade(targetCtx) {
 function getRoundedRectPoints(w, h, r) {
   r = Math.max(0, Math.min(r, w / 2, h / 2));
   const corners = [
-    [ w / 2 - r, -h / 2 + r, -Math.PI / 2, 0 ],
-    [ w / 2 - r,  h / 2 - r, 0,            Math.PI / 2 ],
-    [-w / 2 + r,  h / 2 - r, Math.PI / 2,  Math.PI ],
-    [-w / 2 + r, -h / 2 + r, Math.PI,      Math.PI * 1.5 ]
+    [w / 2 - r, -h / 2 + r, -Math.PI / 2, 0],
+    [w / 2 - r, h / 2 - r, 0, Math.PI / 2],
+    [-w / 2 + r, h / 2 - r, Math.PI / 2, Math.PI],
+    [-w / 2 + r, -h / 2 + r, Math.PI, Math.PI * 1.5]
   ];
   const points = [];
   for (let c = 0; c < 4; c++) {
@@ -687,14 +704,14 @@ async function startExperience() {
   const bgVid = document.getElementById(states[current].background);
   if (bgVid) {
     bgVid.loop = true;
-    bgVid.play().catch(() => {});
+    bgVid.play().catch(() => { });
   }
 
   await ensurePortalMediaReady();
 
   if (!states[current].image && portalVideo) {
     portalVideo.loop = true;
-    portalVideo.play().catch(() => {});
+    portalVideo.play().catch(() => { });
   }
 
   await revealMask();
@@ -932,7 +949,7 @@ function renderModal() {
       { id: 'missions', label: 'Historic Missions' }
     ];
 
-    modalTabs.innerHTML = tabs.map(t => 
+    modalTabs.innerHTML = tabs.map(t =>
       `<button class="modal-tab-btn${activeTab === t.id ? ' active' : ''}" data-tab="${t.id}" type="button">${escapeHtml(t.label)}</button>`
     ).join('');
 
@@ -948,7 +965,7 @@ function renderModal() {
       { id: 'controls', label: 'Flight Controls' }
     ];
 
-    modalTabs.innerHTML = tabs.map(t => 
+    modalTabs.innerHTML = tabs.map(t =>
       `<button class="modal-tab-btn${activeTab === t.id ? ' active' : ''}" data-tab="${t.id}" type="button">${escapeHtml(t.label)}</button>`
     ).join('');
 
@@ -964,7 +981,7 @@ function renderModal() {
       { id: 'giants', label: 'Gas & Ice Giants' }
     ];
 
-    modalTabs.innerHTML = tabs.map(t => 
+    modalTabs.innerHTML = tabs.map(t =>
       `<button class="modal-tab-btn${activeTab === t.id ? ' active' : ''}" data-tab="${t.id}" type="button">${escapeHtml(t.label)}</button>`
     ).join('');
 
@@ -1106,18 +1123,18 @@ function renderPlanetsContent() {
     <p class="section-desc">Catalogue of major celestial bodies orbiting Sol. Planets marked with active transits allow direct orbital insertion.</p>
     <div class="directory-grid">
       ${list.map(p => {
-        const isCurrent = p.teleportState === current;
-        const canTeleport = !!p.teleportState;
-        let btnHtml = '';
-        if (isCurrent) {
-          btnHtml = `<button class="directory-jump-btn disabled" disabled type="button">Current Orbit</button>`;
-        } else if (canTeleport) {
-          btnHtml = `<button class="directory-jump-btn" data-jump="${p.teleportState}" type="button">Teleport to ${escapeHtml(p.name)}</button>`;
-        } else {
-          btnHtml = `<button class="directory-jump-btn disabled" disabled type="button">Uncharted Outer Orbit</button>`;
-        }
+    const isCurrent = p.teleportState === current;
+    const canTeleport = !!p.teleportState;
+    let btnHtml = '';
+    if (isCurrent) {
+      btnHtml = `<button class="directory-jump-btn disabled" disabled type="button">Current Orbit</button>`;
+    } else if (canTeleport) {
+      btnHtml = `<button class="directory-jump-btn" data-jump="${p.teleportState}" type="button">Teleport to ${escapeHtml(p.name)}</button>`;
+    } else {
+      btnHtml = `<button class="directory-jump-btn disabled" disabled type="button">Uncharted Outer Orbit</button>`;
+    }
 
-        return `
+    return `
           <div class="directory-card">
             <div class="directory-card-top">
               <div class="directory-card-title-row">
@@ -1147,7 +1164,7 @@ function renderPlanetsContent() {
             ${btnHtml}
           </div>
         `;
-      }).join('')}
+  }).join('')}
     </div>
   `;
 
@@ -1243,12 +1260,50 @@ window.addEventListener('keydown', (e) => {
 portalBtn.addEventListener('click', travel);
 
 /* ====================================================================
-   12. BOOT ORDER
+   12. BOOT ORDER & FALLBACK INTERCEPTION
    ==================================================================== */
-document.querySelectorAll('.backgrounds .background').forEach(v => {
+const fallbackVideoMap = {
+  '3c83091e-4046-4fd6-adbb-2edb728be79a.mp4': 'mars_bg.mp4',
+  'b30f64d9-1637-477a-83df-d0fc6461a422.mp4': 'to_venus.mp4',
+  '5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4': 'to_mars.mp4',
+  'fc3ded42-e845-41f3-a830-5cab512d79cd.mp4': 'to_earth.mp4'
+};
+
+function attachFallback(v) {
+  if (!v) return;
+  v.addEventListener('error', () => {
+    for (const [key, localName] of Object.entries(fallbackVideoMap)) {
+      if ((v.src && v.src.includes(key)) || (v.currentSrc && v.currentSrc.includes(key))) {
+        const isNext = typeof window !== 'undefined' && (!!window.__NEXT_DATA__ || !!document.querySelector('#__next') || !!document.querySelector('meta[name="next-head-count"]'));
+        const target = isNext ? `/videos/${localName}` : `public/videos/${localName}`;
+        if (v.src !== target) {
+          v.src = target;
+          v.load();
+          v.play().catch(() => { });
+        }
+        break;
+      }
+    }
+  });
+}
+
+document.querySelectorAll('video').forEach(v => {
+  attachFallback(v);
   v.pause();
   v.currentTime = 0;
 });
+
+// If browser on laptop lacks native HEVC decoding, immediately load universal H.264
+if (!canPlayHEVC) {
+  const mBg = document.getElementById('mars-background');
+  if (mBg) mBg.src = MARS_BG;
+  const eBg = document.getElementById('earth-background');
+  if (eBg) eBg.src = TO_EARTH;
+  const vBg = document.getElementById('venus-background');
+  if (vBg) vBg.src = TO_VENUS;
+  const pVid = document.getElementById('preloader-video');
+  if (pVid) pVid.src = TO_MARS;
+}
 
 resizeCanvas();
 render();

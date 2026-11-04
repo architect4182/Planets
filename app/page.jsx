@@ -3,13 +3,29 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 /* ====================================================================
-   1. REMOTE ASSETS
+   1. REMOTE ASSETS & UNIVERSAL CODEC RESOLUTION
    ==================================================================== */
 const BASE = 'https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P';
-const MARS_BG = `${BASE}/3c83091e-4046-4fd6-adbb-2edb728be79a.mp4`;
-const TO_EARTH = `${BASE}/fc3ded42-e845-41f3-a830-5cab512d79cd.mp4`;
-const TO_VENUS = `${BASE}/b30f64d9-1637-477a-83df-d0fc6461a422.mp4`;
-const TO_MARS = `${BASE}/5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4`;
+
+const canPlayHEVC = (function () {
+  if (typeof window === 'undefined') return false;
+  try {
+    const v = document.createElement('video');
+    return !!(v.canPlayType('video/mp4; codecs="hvc1.1.6.L93.B0"') || v.canPlayType('video/mp4; codecs="hev1.1.6.L93.B0"'));
+  } catch (e) {
+    return false;
+  }
+})();
+
+function resolveVideo(remoteUrl, localName) {
+  if (canPlayHEVC) return remoteUrl;
+  return `/videos/${localName}`;
+}
+
+const MARS_BG = resolveVideo(`${BASE}/3c83091e-4046-4fd6-adbb-2edb728be79a.mp4`, 'mars_bg.mp4');
+const TO_EARTH = resolveVideo(`${BASE}/fc3ded42-e845-41f3-a830-5cab512d79cd.mp4`, 'to_earth.mp4');
+const TO_VENUS = resolveVideo(`${BASE}/b30f64d9-1637-477a-83df-d0fc6461a422.mp4`, 'to_venus.mp4');
+const TO_MARS = resolveVideo(`${BASE}/5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4`, 'to_mars.mp4');
 const MERCURY = `${BASE}/d6fb8b6b-c15e-4aaa-9cf7-45bbb5e33372.jpg`;
 const LOGO = `${BASE}/eb7e0f53-50cd-4af5-abc4-8b9a52cdc01b.svg`;
 
@@ -418,6 +434,33 @@ export default function PlanetJumpingPage() {
     const pImg = portalImageRef.current;
     const tVid = transitionVidRef.current;
     const cursorEl = customCursorRef.current;
+
+    /* Video error fallback attachment */
+    const fallbackVideoMap = {
+      '3c83091e-4046-4fd6-adbb-2edb728be79a.mp4': 'mars_bg.mp4',
+      'b30f64d9-1637-477a-83df-d0fc6461a422.mp4': 'to_venus.mp4',
+      '5fc5651c-3b5d-4171-b507-87f7e635d1b4.mp4': 'to_mars.mp4',
+      'fc3ded42-e845-41f3-a830-5cab512d79cd.mp4': 'to_earth.mp4'
+    };
+
+    function attachFallback(v) {
+      if (!v) return;
+      v.addEventListener('error', () => {
+        for (const [key, localName] of Object.entries(fallbackVideoMap)) {
+          if ((v.src && v.src.includes(key)) || (v.currentSrc && v.currentSrc.includes(key))) {
+            const target = `/videos/${localName}`;
+            if (v.src !== target) {
+              v.src = target;
+              v.load();
+              v.play().catch(() => {});
+            }
+            break;
+          }
+        }
+      });
+    }
+
+    [marsBgRef.current, earthBgRef.current, venusBgRef.current, preloaderVidRef.current, pVid, tVid].forEach(attachFallback);
 
     /* Cover draw utility */
     function drawCover(targetCtx, media) {
